@@ -149,7 +149,7 @@ sample = (x, y) ->
 # render a piece of the scene
 render_block = (x, y, width, height, samples, dev, index) ->
   # determine how many samples we need
-  num_samples = Math.min(Math.max(Math.round(dev * width * height * 0.5), 2), 20)
+  num_samples = Math.min(Math.max(Math.round(dev * width * height * 1.0), 2), 20)
 
   # collect samples
   if num_samples > samples.length
@@ -178,9 +178,9 @@ render_block = (x, y, width, height, samples, dev, index) ->
   deviation /= samples.length * 3
 
   # if the deviation is small, just render the average color
-  if (deviation < 0.002) or width * height <= 100
+  if (deviation < 0.002) or width * height <= 16
     window.render_context.fillStyle = average.to_str()
-    window.render_context.fillRect(x - 0.5, y - 0.5, width + 0.5, height + 0.5)
+    window.render_context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
   else
     if width > height
       render_block(x,               y,                width * 0.5, height, samples.filter(((e) -> return e.x < x + width * 0.5)), deviation, index + 1)

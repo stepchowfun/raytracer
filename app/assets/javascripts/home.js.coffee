@@ -91,6 +91,7 @@ $(document).ready(() ->
   for i in [0...10]
     scene_graph.push(new Sphere(new Point(Math.random() * 40 - 20, 9 - i * 2, 1), 1, new Color(Math.random(), Math.random(), Math.random())))
   scene_graph.push(new Sphere(new Point(0, 0, 0), 20, new Color(Math.random(), Math.random(), Math.random())))
+  scene_graph.push(new Sphere(new Point(0, 0, -99.5), 100, new Color(Math.random(), Math.random(), Math.random())))
   scene_graph.push(new Plane(new Point(0, 0, 0), new Point(0, 0, 1), new Color(0.2, 0.2, 0.2)))
 
   # camera state
@@ -135,10 +136,10 @@ $(document).ready(() ->
       theta += 1.5 * dt
     if key_right
       theta -= 1.5 * dt
-    if key_up
-      phi += 1.0 * dt
-    if key_down
-      phi -= 1.0 * dt
+    #if key_up
+    #  phi += 1.0 * dt
+    #if key_down
+    #  phi -= 1.0 * dt
     phi = Math.max(Math.min(phi, Math.PI / 2), -Math.PI / 2)
 
     # move the player
