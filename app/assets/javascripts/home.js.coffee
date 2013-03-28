@@ -89,8 +89,8 @@ $(document).ready(() ->
   window.camera.aspect = width / height
   camera.pos.z = 1
   for i in [0...10]
-    scene_graph.push(new Sphere(new Point(10, 9 - i * 2, 1), 1, new Color(Math.random(), Math.random(), Math.random())))
-  scene_graph.push(new Sphere(new Point(10, 0, 0), 20, new Color(Math.random(), Math.random(), Math.random())))
+    scene_graph.push(new Sphere(new Point(Math.random() * 40 - 20, 9 - i * 2, 1), 1, new Color(Math.random(), Math.random(), Math.random())))
+  scene_graph.push(new Sphere(new Point(0, 0, 0), 20, new Color(Math.random(), Math.random(), Math.random())))
   scene_graph.push(new Plane(new Point(0, 0, 0), new Point(0, 0, 1), new Color(0.2, 0.2, 0.2)))
 
   # camera state
@@ -114,13 +114,13 @@ $(document).ready(() ->
     # input
     acceleration = new Point(0, 0, 0)
     if key_w
-      acceleration = acceleration.add(camera.aim.scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.add((new Point(Math.cos(theta), Math.sin(theta), 0)).scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
     if key_s
-      acceleration = acceleration.add(camera.aim.scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.add((new Point(Math.cos(theta), Math.sin(theta), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
     if key_a
-      acceleration = acceleration.add(camera.left.scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
     if key_d
-      acceleration = acceleration.add(camera.left.scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))    
+      acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))    
     if !key_w and !key_s and !key_a and !key_d
       if velocity.len() < decceleration_factor * dt
         velocity = new Point(0, 0, 0)
@@ -136,12 +136,15 @@ $(document).ready(() ->
     if key_right
       theta -= 1.5 * dt
     if key_up
-      phi += 1.5 * dt
+      phi += 1.0 * dt
     if key_down
-      phi -= 1.5 * dt
+      phi -= 1.0 * dt
+    phi = Math.max(Math.min(phi, Math.PI / 2), -Math.PI / 2)
 
     # move the player
     camera.aim = new Point(Math.cos(theta) * Math.cos(phi), Math.sin(theta) * Math.cos(phi), Math.sin(phi))
+    camera.left = new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)
+    camera.up = new Point(Math.cos(theta) * Math.cos(phi + Math.PI / 2), Math.sin(theta) * Math.cos(phi + Math.PI / 2), Math.sin(phi + Math.PI / 2))
     camera.pos = camera.pos.add(velocity.scaled(dt))
 
     # render the scene

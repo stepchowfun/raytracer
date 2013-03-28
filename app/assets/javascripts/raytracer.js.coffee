@@ -149,7 +149,7 @@ sample = (x, y) ->
 # render a piece of the scene
 render_block = (x, y, width, height, samples, dev, index) ->
   # determine how many samples we need
-  num_samples = Math.min(Math.max(Math.round(dev * width * height * 0.1), 2), 20)
+  num_samples = Math.min(Math.max(Math.round(dev * width * height * 0.5), 2), 20)
 
   # collect samples
   if num_samples > samples.length
@@ -191,9 +191,6 @@ render_block = (x, y, width, height, samples, dev, index) ->
 
 # render the scene
 window.render = () ->
-  # compute the left vector
-  window.camera.left = window.camera.up.cross(window.camera.aim)
-
   # render the scene as a huge block
   window.render_context.fillStyle = "#fff"
   window.render_context.fillRect(render_x, render_y, render_width, render_height)
