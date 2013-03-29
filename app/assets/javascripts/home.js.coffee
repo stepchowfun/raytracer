@@ -154,8 +154,8 @@ $(document).ready(() ->
     camera.up = new Point(Math.cos(theta) * Math.cos(phi + Math.PI / 2), Math.sin(theta) * Math.cos(phi + Math.PI / 2), Math.sin(phi + Math.PI / 2))
     camera.pos = camera.pos.add(velocity.scaled(dt))
 
-    quality += Math.min(Math.max((1 / dt - desired_fps) * 0.01, -1), 1)
-    quality = Math.min(Math.max(quality, 5), 50)
+    quality *= 1 + Math.min(Math.max((1 / dt - desired_fps) * 0.01, -0.9), 0.9)
+    quality = Math.min(Math.max(quality, 1), 100)
 
     # render the scene
     render(quality)
@@ -164,7 +164,7 @@ $(document).ready(() ->
     requestAnimFrame(render_frame)
 
     # log the fps occasionally
-    if Math.random() < 0.01
+    if Math.random() < 0.09
       console.log 1 / dt
 
   # render the first frame

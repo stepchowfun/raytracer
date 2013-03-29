@@ -11,3 +11,9 @@
  *= require_self
  *= require bootstrap.min
  */
+
+@media (max-width: 767px) {
+  body {
+    padding: 0 !important;
+  }
+}
