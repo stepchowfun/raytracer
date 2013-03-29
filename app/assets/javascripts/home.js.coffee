@@ -89,9 +89,9 @@ $(document).ready(() ->
   window.camera.aspect = width / height
   camera.pos.z = 1
   for i in [0...10]
-    scene_graph.push(new Sphere(new Point(Math.random() * 40 - 20, 9 - i * 2, 1), 1, new Color(Math.random(), Math.random(), Math.random())))
-  scene_graph.push(new Sphere(new Point(0, 0, 0), 20, new Color(Math.random(), Math.random(), Math.random())))
-  scene_graph.push(new Sphere(new Point(0, 0, -99.5), 100, new Color(Math.random(), Math.random(), Math.random())))
+    scene_graph.push(new Sphere(new Point(15, 9 - i * 2, 1), 1, new Color(i / 9, 1 - i / 9, 0.5)))
+  scene_graph.push(new Sphere(new Point(0, 0, 0), 20, new Color(0.9, 0.7, 0.3)))
+  scene_graph.push(new Sphere(new Point(0, 0, -99.5), 100, new Color(0.1, 0.3, 0.6)))
   scene_graph.push(new Plane(new Point(0, 0, 0), new Point(0, 0, 1), new Color(0.2, 0.2, 0.2)))
 
   # camera state
@@ -155,7 +155,7 @@ $(document).ready(() ->
     requestAnimFrame(render_frame)
 
     # log the fps occasionally
-    if Math.random() < 0.01
+    if Math.random() < 0.05
       console.log 1 / dt
   render_frame()
 )

@@ -25,7 +25,7 @@ class window.Point
   cross: (other) ->
     return new Point(@y * other.z - @z * other.y, @z * other.x - @x * other.z, @x * other.y - @y * other.z)
 
-  # normalize the vector
+  # return a scaled version of the vector
   scaled: (s) ->
     return new Point(@x * s, @y * s, @z * s)
 
@@ -46,6 +46,14 @@ class window.Color
 
   # returns a CSS-compatible string
   to_str: () -> "rgb(" + String(Math.round(@r * 255)) + ", " + String(Math.round(@g * 255)) + ", " + String(Math.round(@b * 255)) + ")";
+
+  # return the sum of this and another color
+  add: (other) ->
+    return new Color(Math.min(@r + other.r, 1), Math.min(@g + other.g, 1), Math.min(@b + other.b, 1))
+
+  # return a scaled version of the color
+  scaled: (s) ->
+    return new Color(Math.max(Math.min(@r * s, 1), 0), Math.max(Math.min(@g *s, 1), 0), Math.max(Math.min(@b * s, 1), 0))
 
 # represents the result of an intersection
 class window.Hit
@@ -96,7 +104,7 @@ class window.Plane
 window.scene_graph = []
 
 # background color
-window.background_color = new Color(0, 0, 0)
+window.background_color = new Color(0.3, 0.3, 0.3)
 
 # device information
 window.render_context = null
@@ -143,19 +151,34 @@ sample = (x, y) ->
       t = hit.t
       col = hit.color
 
+  # apply fog
+  fog_factor = Math.min(t / 50, 1)
+  col = col.scaled(1 - fog_factor).add((new Color(0.3, 0.3, 0.3)).scaled(fog_factor))
+
   # return the color
   return col
 
 # render a piece of the scene
 render_block = (x, y, width, height, samples, dev, index) ->
   # determine how many samples we need
-  num_samples = Math.min(Math.max(Math.round(dev * width * height * 1.0), 2), 20)
+  num_samples = Math.min(Math.max(Math.round(width * height / 50), 3), 20)
 
   # collect samples
   if num_samples > samples.length
-    for i in [0...(num_samples - samples.length)]
-      the_x = x + Math.random() * width
-      the_y = y + Math.random() * height
+    new_samples = num_samples - samples.length
+    sample_area = width * height / new_samples
+    columns = Math.round(width / Math.sqrt(sample_area))
+    rows = Math.ceil(num_samples / columns)
+    cell_width = width / columns
+    cell_height = height / rows
+
+    for i in [0...new_samples]
+      #the_x = x + Math.random() * width
+      #the_y = y + Math.random() * height
+
+      the_x = x + (i % columns + 0.5) * cell_width
+      the_y = y + (Math.floor(i / columns) + 0.5) * cell_height
+
       the_sample = sample(the_x, the_y)
       the_sample.x = the_x
       the_sample.y = the_y
@@ -163,22 +186,22 @@ render_block = (x, y, width, height, samples, dev, index) ->
 
   # average the samples
   average = new Color(0, 0, 0)
-  for i in [0...samples.length]
+  for i in [0...num_samples]
     average.r += samples[i].r
     average.g += samples[i].g
     average.b += samples[i].b
-  average.r /= samples.length
-  average.g /= samples.length
-  average.b /= samples.length
+  average.r /= num_samples
+  average.g /= num_samples
+  average.b /= num_samples
 
   # compute the deviation
   deviation = 0
-  for i in [0...samples.length]
-    deviation += Math.pow(samples[i].r - average.r, 2) + Math.pow(samples[i].g - average.g, 2) + Math.pow(samples[i].b - average.b, 2)
-  deviation /= samples.length * 3
+  for i in [0...num_samples]
+    deviation += Math.sqrt(Math.pow(samples[i].r - average.r, 2) + Math.pow(samples[i].g - average.g, 2) + Math.pow(samples[i].b - average.b, 2))
+  deviation /= num_samples
 
   # if the deviation is small, just render the average color
-  if (deviation < 0.002) or width * height <= 16
+  if index > 4 and ((deviation < 0.04) or width * height <= 64)
     window.render_context.fillStyle = average.to_str()
     window.render_context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
   else
