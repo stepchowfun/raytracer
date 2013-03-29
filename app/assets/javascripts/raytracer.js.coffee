@@ -159,7 +159,7 @@ sample = (x, y) ->
   return col
 
 # render a piece of the scene
-render_block = (x, y, width, height, samples, dev, index) ->
+render_block = (x, y, width, height, samples, dev, index, quality) ->
   # determine how many samples we need
   num_samples = Math.min(Math.max(Math.round(width * height / 50), 3), 10)
 
@@ -199,7 +199,7 @@ render_block = (x, y, width, height, samples, dev, index) ->
   deviation /= num_samples
 
   # if the deviation is small, just render the average color
-  if index > 4 and ((deviation < 0.04) or width * height <= 64)
+  if index > 4 and ((deviation < 1 / quality) or width * height <= 64)
     window.render_context.fillStyle = average.to_str()
     window.render_context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
 
@@ -208,15 +208,15 @@ render_block = (x, y, width, height, samples, dev, index) ->
     #  window.render_context.fillRect(my_sample.x, my_sample.y, 2, 2)
   else
     if width > height
-      render_block(x,               y,                width * 0.5, height, samples.filter(((e) -> return e.x < x + width * 0.5)), deviation, index + 1)
-      render_block(x + width * 0.5, y,                width * 0.5, height, samples.filter(((e) -> return e.x >= x + width * 0.5)), deviation, index + 1)
+      render_block(x,               y,                width * 0.5, height, samples.filter(((e) -> return e.x < x + width * 0.5)), deviation, index + 1, quality)
+      render_block(x + width * 0.5, y,                width * 0.5, height, samples.filter(((e) -> return e.x >= x + width * 0.5)), deviation, index + 1, quality)
     else
-      render_block(x,               y,                width, height * 0.5, samples.filter(((e) -> return e.y < y + height * 0.5)), deviation, index + 1)
-      render_block(x,               y + height * 0.5, width, height * 0.5, samples.filter(((e) -> return e.y >= y + height * 0.5)), deviation, index + 1)
+      render_block(x,               y,                width, height * 0.5, samples.filter(((e) -> return e.y < y + height * 0.5)), deviation, index + 1, quality)
+      render_block(x,               y + height * 0.5, width, height * 0.5, samples.filter(((e) -> return e.y >= y + height * 0.5)), deviation, index + 1, quality)
 
 # render the scene
-window.render = () ->
+window.render = (quality) ->
   # render the scene as a huge block
   window.render_context.fillStyle = "#fff"
   window.render_context.fillRect(render_x, render_y, render_width, render_height)
-  render_block(render_x, render_y, render_width, render_height, [], 0.01, 0)
+  render_block(render_x, render_y, render_width, render_height, [], 0.01, 0, quality)

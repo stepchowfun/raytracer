@@ -103,7 +103,13 @@ $(document).ready(() ->
   max_velocity = 16
 
   # the time when the last frame was rendered
-  time = new Date().getTime()
+  time = (new Date().getTime()) - 1000 / 30
+
+  # desired framerate
+  desired_fps = 30
+
+  # quality
+  quality = 10
 
   # render
   render_frame = () ->
@@ -148,14 +154,19 @@ $(document).ready(() ->
     camera.up = new Point(Math.cos(theta) * Math.cos(phi + Math.PI / 2), Math.sin(theta) * Math.cos(phi + Math.PI / 2), Math.sin(phi + Math.PI / 2))
     camera.pos = camera.pos.add(velocity.scaled(dt))
 
+    quality += Math.min(Math.max((1 / dt - desired_fps) * 0.01, -1), 1)
+    quality = Math.min(Math.max(quality, 5), 50)
+
     # render the scene
-    render()
+    render(quality)
 
     # ask the browser to render the next scene soon
     requestAnimFrame(render_frame)
 
     # log the fps occasionally
-    if Math.random() < 0.05
+    if Math.random() < 0.01
       console.log 1 / dt
+
+  # render the first frame
   render_frame()
 )
