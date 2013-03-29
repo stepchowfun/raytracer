@@ -161,35 +161,33 @@ sample = (x, y) ->
 # render a piece of the scene
 render_block = (x, y, width, height, samples, dev, index) ->
   # determine how many samples we need
-  num_samples = Math.min(Math.max(Math.round(width * height / 50), 3), 20)
+  num_samples = Math.min(Math.max(Math.round(width * height / 50), 3), 10)
 
   # collect samples
   if num_samples > samples.length
     new_samples = num_samples - samples.length
     sample_area = width * height / new_samples
     columns = Math.round(width / Math.sqrt(sample_area))
-    rows = Math.ceil(num_samples / columns)
+    rows = Math.ceil(new_samples / columns)
     cell_width = width / columns
     cell_height = height / rows
 
     for i in [0...new_samples]
-      #the_x = x + Math.random() * width
-      #the_y = y + Math.random() * height
-
       the_x = x + (i % columns + 0.5) * cell_width
       the_y = y + (Math.floor(i / columns) + 0.5) * cell_height
 
       the_sample = sample(the_x, the_y)
       the_sample.x = the_x
       the_sample.y = the_y
+      the_sample.index = index
       samples.push(the_sample)
 
   # average the samples
   average = new Color(0, 0, 0)
-  for i in [0...num_samples]
-    average.r += samples[i].r
-    average.g += samples[i].g
-    average.b += samples[i].b
+  for s in samples
+    average.r += s.r
+    average.g += s.g
+    average.b += s.b
   average.r /= num_samples
   average.g /= num_samples
   average.b /= num_samples
@@ -204,6 +202,10 @@ render_block = (x, y, width, height, samples, dev, index) ->
   if index > 4 and ((deviation < 0.04) or width * height <= 64)
     window.render_context.fillStyle = average.to_str()
     window.render_context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
+
+    #window.render_context.fillStyle = "#f00"
+    #for my_sample in samples
+    #  window.render_context.fillRect(my_sample.x, my_sample.y, 2, 2)
   else
     if width > height
       render_block(x,               y,                width * 0.5, height, samples.filter(((e) -> return e.x < x + width * 0.5)), deviation, index + 1)
