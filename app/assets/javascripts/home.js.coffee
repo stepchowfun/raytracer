@@ -78,13 +78,17 @@ $(document).ready(() ->
   )
 
   # set up the scene
-  window.device.context = context
+  device.context = context
   camera.pos.z = 1
-  for i in [0...4]
-    scene_graph.push(new Sphere(new Point(15, 3 - i * 2, 1), 1, new Color(i / 9, 1 - i / 9, 0.5)))
-  scene_graph.push(new Sphere(new Point(0, 0, 0), 20, new Color(0.9, 0.7, 0.3)))
-  scene_graph.push(new Sphere(new Point(0, 0, -99.5), 100, new Color(0.1, 0.3, 0.6)))
-  scene_graph.push(new Plane(new Point(0, 0, 0), new Point(0, 0, 1), new Color(0.2, 0.2, 0.2)))
+  ground_size = 5
+  fence_height = 3
+  sky_height = 10
+  scene_graph.push(new Plane(new Point(0, 0, sky_height), new Point(0, 0, -1), new Material(new Color(0, 0, 0), "sky.jpg", 0.05)))
+  scene_graph.push(new Rectangle(new Point(-4 * ground_size, 2.35 * ground_size, 0), new Point(4 * ground_size, 2.35 * ground_size, 0), new Point(4 * ground_size, -2.35 * ground_size, 0), new Point(-4 * ground_size, -2.35 * ground_size, 0), new Material(new Color(0, 0, 0), "court.jpg", 1)))
+  scene_graph.push(new Rectangle(new Point(-4 * ground_size, 2.35 * ground_size, fence_height), new Point(4 * ground_size, 2.35 * ground_size, fence_height), new Point(4 * ground_size, 2.35 * ground_size, 0), new Point(-4 * ground_size, 2.35 * ground_size, 0), new Material(new Color(0, 0, 0), "fence.jpg", 1)))
+  scene_graph.push(new Rectangle(new Point(4 * ground_size, -2.35 * ground_size, fence_height), new Point(-4 * ground_size, -2.35 * ground_size, fence_height), new Point(-4 * ground_size, -2.35 * ground_size, 0), new Point(4 * ground_size, -2.35 * ground_size, 0), new Material(new Color(0, 0, 0), "fence.jpg", 1)))
+  scene_graph.push(new Rectangle(new Point(-4 * ground_size, -2.35 * ground_size, fence_height), new Point(-4 * ground_size, 2.35 * ground_size, fence_height), new Point(-4 * ground_size, 2.35 * ground_size, 0), new Point(-4 * ground_size, -2.35 * ground_size, 0), new Material(new Color(0, 0, 0), "fence.jpg", 1)))
+  scene_graph.push(new Rectangle(new Point(4 * ground_size, 2.35 * ground_size, fence_height), new Point(4 * ground_size, -2.35 * ground_size, fence_height), new Point(4 * ground_size, -2.35 * ground_size, 0), new Point(4 * ground_size, 2.35 * ground_size, 0), new Material(new Color(0, 0, 0), "fence.jpg", 1)))
 
   # camera state
   theta = 0
@@ -98,7 +102,7 @@ $(document).ready(() ->
   time = (new Date().getTime()) - 1000 / 30
 
   # desired framerate
-  desired_fps = 30
+  desired_fps = 25
 
   # render
   render_frame = () ->
@@ -110,22 +114,22 @@ $(document).ready(() ->
     # input
     acceleration = new Point(0, 0, 0)
     if key_w or key_up
-      acceleration = acceleration.add((new Point(Math.cos(theta), Math.sin(theta), 0)).scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.plus((new Point(Math.cos(theta), Math.sin(theta), 0)).times(max_velocity * 1.1).minus(velocity).normalized().times(acceleration_factor))
     if key_s or key_down
-      acceleration = acceleration.add((new Point(Math.cos(theta), Math.sin(theta), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.plus((new Point(Math.cos(theta), Math.sin(theta), 0)).times(-max_velocity * 1.1).minus(velocity).normalized().times(acceleration_factor))
     if key_a
-      acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.plus((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).times(max_velocity * 1.1).minus(velocity).normalized().times(acceleration_factor))
     if key_d
-      acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+      acceleration = acceleration.plus((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).times(-max_velocity * 1.1).minus(velocity).normalized().times(acceleration_factor))
     if acceleration.len() == 0
       if velocity.len() < decceleration_factor * dt
         velocity = new Point(0, 0, 0)
       else
-        velocity = velocity.add(velocity.normalized().scaled(-decceleration_factor * dt))
+        velocity = velocity.plus(velocity.normalized().times(-decceleration_factor * dt))
     else
-      velocity = velocity.add(acceleration.scaled(dt))
+      velocity = velocity.plus(acceleration.times(dt))
     if velocity.len() > max_velocity
-      velocity = velocity.normalized().scaled(max_velocity)
+      velocity = velocity.normalized().times(max_velocity)
 
     if key_left
       theta += 1.5 * dt
@@ -141,7 +145,16 @@ $(document).ready(() ->
     camera.aim = new Point(Math.cos(theta) * Math.cos(phi), Math.sin(theta) * Math.cos(phi), Math.sin(phi))
     camera.left = new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)
     camera.up = new Point(Math.cos(theta) * Math.cos(phi + Math.PI / 2), Math.sin(theta) * Math.cos(phi + Math.PI / 2), Math.sin(phi + Math.PI / 2))
-    camera.pos = camera.pos.add(velocity.scaled(dt))
+    camera.pos = camera.pos.plus(velocity.times(dt))
+
+    if camera.pos.x < -4 * ground_size * 0.95
+      camera.pos.x = -4 * ground_size * 0.95
+    if camera.pos.x > 4 * ground_size * 0.95
+      camera.pos.x = 4 * ground_size * 0.95
+    if camera.pos.y < -2.35 * ground_size * 0.95
+      camera.pos.y = -2.35 * ground_size * 0.95
+    if camera.pos.y > 2.35 * ground_size * 0.95
+      camera.pos.y = 2.35 * ground_size * 0.95
 
     device.quality *= 1 + Math.min(Math.max((1 / dt - desired_fps) * 0.01, -0.9), 0.9)
     device.quality = Math.min(Math.max(device.quality, 5), 100)
