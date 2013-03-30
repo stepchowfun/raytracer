@@ -9,30 +9,27 @@ requestAnimFrame = window.requestAnimationFrame       ||
                    (callback) -> window.setTimeout(callback, 1000 / 60)
 
 $(document).ready(() ->
-  # get the window size
-  width = $(window).innerWidth()
-  height = $(window).innerHeight()
+  # total framebuffer resolution
+  width = null
+  height = null
 
   # set the canvas size
   framebuffer = document.getElementById("framebuffer")
   context = framebuffer.getContext("2d")
-  framebuffer.width = width
-  framebuffer.height = height
 
   # resize handler
   $(window).resize(() ->
-    $("#framebuffer").width(100)
-    $("#framebuffer").height(100)
     width = $(window).innerWidth()
     height = $(window).innerHeight()
     framebuffer.width = width
     framebuffer.height = height
     window.render_width = width
     window.render_height = height
-    $("#framebuffer").width(width)
-    $("#framebuffer").height(height)
+    $("#framebuffer").width($(window).innerWidth())
+    $("#framebuffer").height($(window).innerHeight())
     window.camera.aspect = width / height
   )
+  $(window).resize()
 
   # keyboard input
   key_w = false
@@ -82,14 +79,9 @@ $(document).ready(() ->
 
   # set up the scene
   window.render_context = context
-  window.render_width = width
-  window.render_height = height
-  $("#framebuffer").width(width)
-  $("#framebuffer").height(height)
-  window.camera.aspect = width / height
   camera.pos.z = 1
-  for i in [0...10]
-    scene_graph.push(new Sphere(new Point(15, 9 - i * 2, 1), 1, new Color(i / 9, 1 - i / 9, 0.5)))
+  for i in [0...4]
+    scene_graph.push(new Sphere(new Point(15, 3 - i * 2, 1), 1, new Color(i / 9, 1 - i / 9, 0.5)))
   scene_graph.push(new Sphere(new Point(0, 0, 0), 20, new Color(0.9, 0.7, 0.3)))
   scene_graph.push(new Sphere(new Point(0, 0, -99.5), 100, new Color(0.1, 0.3, 0.6)))
   scene_graph.push(new Plane(new Point(0, 0, 0), new Point(0, 0, 1), new Color(0.2, 0.2, 0.2)))
