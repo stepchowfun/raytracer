@@ -23,8 +23,8 @@ $(document).ready(() ->
     height = $(window).innerHeight()
     framebuffer.width = width
     framebuffer.height = height
-    window.render_width = width
-    window.render_height = height
+    window.device.width = width
+    window.device.height = height
     $("#framebuffer").width($(window).innerWidth())
     $("#framebuffer").height($(window).innerHeight())
     window.camera.aspect = width / height
@@ -78,7 +78,7 @@ $(document).ready(() ->
   )
 
   # set up the scene
-  window.render_context = context
+  window.device.context = context
   camera.pos.z = 1
   for i in [0...4]
     scene_graph.push(new Sphere(new Point(15, 3 - i * 2, 1), 1, new Color(i / 9, 1 - i / 9, 0.5)))
@@ -99,9 +99,6 @@ $(document).ready(() ->
 
   # desired framerate
   desired_fps = 30
-
-  # quality
-  quality = 10
 
   # render
   render_frame = () ->
@@ -146,18 +143,18 @@ $(document).ready(() ->
     camera.up = new Point(Math.cos(theta) * Math.cos(phi + Math.PI / 2), Math.sin(theta) * Math.cos(phi + Math.PI / 2), Math.sin(phi + Math.PI / 2))
     camera.pos = camera.pos.add(velocity.scaled(dt))
 
-    quality *= 1 + Math.min(Math.max((1 / dt - desired_fps) * 0.01, -0.9), 0.9)
-    quality = Math.min(Math.max(quality, 1), 100)
+    device.quality *= 1 + Math.min(Math.max((1 / dt - desired_fps) * 0.01, -0.9), 0.9)
+    device.quality = Math.min(Math.max(device.quality, 5), 100)
 
     # render the scene
-    render(quality)
+    render()
 
     # ask the browser to render the next scene soon
     requestAnimFrame(render_frame)
 
     # log the fps occasionally
     if Math.random() < 0.09
-      console.log quality
+      console.log device.quality
 
   # render the first frame
   render_frame()
