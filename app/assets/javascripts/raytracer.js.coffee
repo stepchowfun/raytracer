@@ -137,31 +137,37 @@ window.camera = {
 # sample the color at a point in screen space
 sample = (x, y) ->
   # compute which ray corresponds to this point
-  left = -(x / window.render_width - 0.5) * 2.0 * Math.tan(window.camera.fov * 0.5)
-  up = -(y / window.render_height - 0.5) * 2.0 * Math.tan(window.camera.fov * 0.5) / window.camera.aspect
+  tmp = 2 * Math.tan(window.camera.fov * 0.5)
+  left = -(x / window.render_width - 0.5) * tmp
+  up = -(y / window.render_height - 0.5) * tmp / window.camera.aspect
   dir = window.camera.aim.add(window.camera.left.scaled(left)).add(window.camera.up.scaled(up)).normalized()
   ray = new Ray(window.camera.pos, dir)
 
   # intersect the ray with all the objects in the scene graph
-  t = null
-  col = window.background_color
-  for i in [0...window.scene_graph.length]
-    hit = window.scene_graph[i].intersect(ray)
-    if hit != null and (t == null or hit.t < t)
-      t = hit.t
-      col = hit.color
+  hit = null
+  for item in window.scene_graph
+    test_hit = item.intersect(ray)
+    if test_hit != null and (hit == null or test_hit.t < hit.t)
+      hit = test_hit
 
-  # apply fog
-  fog_factor = Math.min(t / 50, 1)
-  col = col.scaled(1 - fog_factor).add((new Color(0.3, 0.3, 0.3)).scaled(fog_factor))
+  # check if there was a hit
+  if hit == null
+    return window.background_color
+  else
+    # perform shading
+    col = hit.color
 
-  # return the color
-  return col
+    # apply fog
+    fog_factor = Math.min(hit.t / 50, 1)
+    col = col.scaled(1 - fog_factor).add((new Color(0.3, 0.3, 0.3)).scaled(fog_factor))
+
+    # return the color
+    return col
 
 # render a piece of the scene
 render_block = (x, y, width, height, samples, dev, index, quality) ->
   # determine how many samples we need
-  num_samples = Math.min(Math.max(Math.round(width * height / 50), 3), 10)
+  num_samples = Math.max(Math.min(Math.max(Math.round(width * height / 50), 3), 20), samples.length)
 
   # collect samples
   if num_samples > samples.length
@@ -175,7 +181,6 @@ render_block = (x, y, width, height, samples, dev, index, quality) ->
     for i in [0...new_samples]
       the_x = x + (i % columns + 0.5) * cell_width
       the_y = y + (Math.floor(i / columns) + 0.5) * cell_height
-
       the_sample = sample(the_x, the_y)
       the_sample.x = the_x
       the_sample.y = the_y
@@ -194,8 +199,8 @@ render_block = (x, y, width, height, samples, dev, index, quality) ->
 
   # compute the deviation
   deviation = 0
-  for i in [0...num_samples]
-    deviation += Math.sqrt(Math.pow(samples[i].r - average.r, 2) + Math.pow(samples[i].g - average.g, 2) + Math.pow(samples[i].b - average.b, 2))
+  for s in samples
+    deviation += Math.sqrt(Math.pow(s.r - average.r, 2) + Math.pow(s.g - average.g, 2) + Math.pow(s.b - average.b, 2))
   deviation /= num_samples
 
   # if the deviation is small, just render the average color
@@ -203,16 +208,18 @@ render_block = (x, y, width, height, samples, dev, index, quality) ->
     window.render_context.fillStyle = average.to_str()
     window.render_context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
 
-    #window.render_context.fillStyle = "#f00"
-    #for my_sample in samples
-    #  window.render_context.fillRect(my_sample.x, my_sample.y, 2, 2)
+  #  window.render_context.fillStyle = "#f00"
+  #  for my_sample in samples
+  #    window.render_context.fillRect(my_sample.x, my_sample.y, 2, 2)
   else
     if width > height
-      render_block(x,               y,                width * 0.5, height, samples.filter(((e) -> return e.x < x + width * 0.5)), deviation, index + 1, quality)
-      render_block(x + width * 0.5, y,                width * 0.5, height, samples.filter(((e) -> return e.x >= x + width * 0.5)), deviation, index + 1, quality)
+      threshold = x + width * 0.5
+      render_block(x,               y,                width * 0.5, height, samples.filter((e) -> e.x < threshold), deviation, index + 1, quality)
+      render_block(x + width * 0.5, y,                width * 0.5, height, samples.filter((e) -> e.x >= threshold), deviation, index + 1, quality)
     else
-      render_block(x,               y,                width, height * 0.5, samples.filter(((e) -> return e.y < y + height * 0.5)), deviation, index + 1, quality)
-      render_block(x,               y + height * 0.5, width, height * 0.5, samples.filter(((e) -> return e.y >= y + height * 0.5)), deviation, index + 1, quality)
+      threshold = y + height * 0.5
+      render_block(x,               y,                width, height * 0.5, samples.filter((e) -> e.y < threshold), deviation, index + 1, quality)
+      render_block(x,               y + height * 0.5, width, height * 0.5, samples.filter((e) -> e.y >= threshold), deviation, index + 1, quality)
 
 # render the scene
 window.render = (quality) ->

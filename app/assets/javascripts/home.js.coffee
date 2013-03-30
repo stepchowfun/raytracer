@@ -165,7 +165,7 @@ $(document).ready(() ->
 
     # log the fps occasionally
     if Math.random() < 0.09
-      console.log 1 / dt
+      console.log quality
 
   # render the first frame
   render_frame()
