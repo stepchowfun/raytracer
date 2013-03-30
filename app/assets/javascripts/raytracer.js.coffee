@@ -102,7 +102,7 @@ window.camera = {
   up: new Point(0, 0, 1),
 
   # horizontal field of view in radians
-  fov: 1.0471975512,
+  fov: 1.57,
 
   # fog settings
   fog_enabled: true,
