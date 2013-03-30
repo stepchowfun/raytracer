@@ -165,10 +165,6 @@ $(document).ready(() ->
     # ask the browser to render the next scene soon
     requestAnimFrame(render_frame)
 
-    # log the fps occasionally
-    if Math.random() < 0.09
-      console.log device.quality
-
   # render the first frame
   render_frame()
 )
