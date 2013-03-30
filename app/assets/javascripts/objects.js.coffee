@@ -16,7 +16,7 @@ class window.Sphere
       t = t1
     else
       t = t2
-    color_factor = Math.pow(Math.sin((ray.origin.y + ray.dir.y * t) / 3), 2)
+    color_factor = 0.2 + 0.8 * Math.pow(Math.sin((ray.origin.y + ray.dir.y * t) / 3), 2)
     return new Hit(t, new Color(@color.r * color_factor, @color.g * color_factor, @color.b * color_factor))
 
 # represents an plane in the scene

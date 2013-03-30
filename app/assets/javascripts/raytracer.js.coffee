@@ -63,9 +63,6 @@ class window.Hit
 # a list of objects in the scene (see objects.js.coffee)
 window.scene_graph = []
 
-# background color
-window.background_color = new Color(0.3, 0.3, 0.3)
-
 # device information
 window.device = {
   # the canvas context
@@ -104,9 +101,13 @@ window.camera = {
   # horizontal field of view in radians
   fov: 1.57,
 
+  # background color
+  background_color: new Color(0, 0, 0),
+
   # fog settings
   fog_enabled: true,
   fog_distance: 50,
+  fog_color: new Color(0, 0, 0),
 
   # aspect ratio (width/height)
   aspect: 1
@@ -130,7 +131,7 @@ sample = (x, y) ->
 
   # check if there was a hit
   if hit == null
-    return window.background_color
+    return window.camera.background_color
   else
     # perform shading
     col = hit.color
@@ -138,7 +139,7 @@ sample = (x, y) ->
     # apply fog
     if window.camera.fog_enabled
       fog_factor = Math.min(hit.t / window.camera.fog_distance, 1)
-      col = col.scaled(1 - fog_factor).add((new Color(0.3, 0.3, 0.3)).scaled(fog_factor))
+      col = col.scaled(1 - fog_factor).add(window.camera.fog_color.scaled(fog_factor))
 
     # return the color
     return col
