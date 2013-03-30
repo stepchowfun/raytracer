@@ -36,6 +36,7 @@ $(document).ready(() ->
   key_s = false
   key_a = false
   key_d = false
+  key_q = false
   key_up = false
   key_down = false
   key_left = false
@@ -49,6 +50,8 @@ $(document).ready(() ->
       key_a = true
     if e.which == "D".charCodeAt(0)
       key_d = true
+    if e.which == "Q".charCodeAt(0)
+      key_q = true
     if e.which == 38
       key_up = true
     if e.which == 40
@@ -67,6 +70,8 @@ $(document).ready(() ->
       key_a = false
     if e.which == "D".charCodeAt(0)
       key_d = false
+    if e.which == "Q".charCodeAt(0)
+      key_q = false
     if e.which == 38
       key_up = false
     if e.which == 40
@@ -130,16 +135,10 @@ $(document).ready(() ->
       velocity = velocity.plus(acceleration.times(dt))
     if velocity.len() > max_velocity
       velocity = velocity.normalized().times(max_velocity)
-
     if key_left
       theta += 1.5 * dt
     if key_right
       theta -= 1.5 * dt
-    #if key_up
-    #  phi += 1.0 * dt
-    #if key_down
-    #  phi -= 1.0 * dt
-    phi = Math.max(Math.min(phi, Math.PI / 2), -Math.PI / 2)
 
     # move the player
     camera.aim = new Point(Math.cos(theta) * Math.cos(phi), Math.sin(theta) * Math.cos(phi), Math.sin(phi))
@@ -147,6 +146,7 @@ $(document).ready(() ->
     camera.up = new Point(Math.cos(theta) * Math.cos(phi + Math.PI / 2), Math.sin(theta) * Math.cos(phi + Math.PI / 2), Math.sin(phi + Math.PI / 2))
     camera.pos = camera.pos.plus(velocity.times(dt))
 
+    # restrict the player to the demo area
     if camera.pos.x < -4 * ground_size * 0.95
       camera.pos.x = -4 * ground_size * 0.95
     if camera.pos.x > 4 * ground_size * 0.95
@@ -156,8 +156,13 @@ $(document).ready(() ->
     if camera.pos.y > 2.35 * ground_size * 0.95
       camera.pos.y = 2.35 * ground_size * 0.95
 
+    # dynamically adjust the render quality to maintain constant framerate
     device.quality *= 1 + Math.min(Math.max((1 / dt - desired_fps) * 0.01, -0.9), 0.9)
     device.quality = Math.min(Math.max(device.quality, 5), 100)
+
+    # quality override
+    if key_q
+      device.quality = 80
 
     # render the scene
     render()
