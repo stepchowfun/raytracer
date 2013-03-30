@@ -59,6 +59,7 @@ class window.Color
 class window.Material
   # constructor
   constructor: (@color, @texture_url, @scale) ->
+    # load the texture if necessary
     @texture_loaded = false
     if @texture_url
       @canvas = document.createElement("canvas")
@@ -77,6 +78,7 @@ class window.Material
 
   # determine the surface color
   shade: (tx, ty) ->
+    # sample the texture if necessary
     if @texture_loaded
       tx *= @scale
       ty *= @scale
@@ -188,7 +190,7 @@ render_block = (x, y, width, height, samples, index) ->
   # determine how many samples we need
   num_samples = Math.max(Math.min(Math.max(Math.round(width * height / 10000 * window.device.quality), 3), 20), samples.length)
 
-  # collect samples
+  # determine if we need to collect more samples
   if num_samples > samples.length
     new_samples = num_samples - samples.length
     sample_area = width * height / new_samples
@@ -197,6 +199,7 @@ render_block = (x, y, width, height, samples, index) ->
     cell_width = width / columns
     cell_height = height / rows
 
+    # perform the sampling
     for i in [0...new_samples]
       the_x = x + (i % columns + 0.5) * cell_width
       the_y = y + (Math.floor(i / columns) + 0.5) * cell_height
@@ -222,15 +225,12 @@ render_block = (x, y, width, height, samples, index) ->
     deviation += Math.sqrt(Math.pow(s.r - average.r, 2) + Math.pow(s.g - average.g, 2) + Math.pow(s.b - average.b, 2))
   deviation /= num_samples
 
-  # if the deviation is small, just render the average color
+  # if the deviation is small, just draw a rectangle whose color is the mean above
   if (deviation < 1 / window.device.quality) or width * height <= 64
     window.device.context.fillStyle = average.to_str()
     window.device.context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
-
-    #window.device.context.fillStyle = "#f00"
-    #for my_sample in samples
-    #  window.device.context.fillRect(my_sample.x, my_sample.y, 2, 2)
   else
+    # split the rectangle in half and recurse on each half
     if width > height
       threshold = x + width * 0.5
       render_block(x,               y,                width * 0.5, height, samples.filter((e) -> e.x < threshold), index + 1)
@@ -243,6 +243,4 @@ render_block = (x, y, width, height, samples, index) ->
 # render the scene
 window.render = () ->
   # render the scene as a huge block
-  window.device.context.fillStyle = "#fff"
-  window.device.context.fillRect(device.x, device.y, device.width, device.height)
   render_block(device.x, device.y, device.width, device.height, [], 0)
