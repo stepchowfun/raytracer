@@ -109,15 +109,15 @@ $(document).ready(() ->
 
     # input
     acceleration = new Point(0, 0, 0)
-    if key_w
+    if key_w or key_up
       acceleration = acceleration.add((new Point(Math.cos(theta), Math.sin(theta), 0)).scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
-    if key_s
+    if key_s or key_down
       acceleration = acceleration.add((new Point(Math.cos(theta), Math.sin(theta), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
     if key_a
       acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
     if key_d
-      acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))    
-    if !key_w and !key_s and !key_a and !key_d
+      acceleration = acceleration.add((new Point(Math.cos(theta + Math.PI / 2), Math.sin(theta + Math.PI / 2), 0)).scaled(-max_velocity * 1.1).subtract(velocity).normalized().scaled(acceleration_factor))
+    if acceleration.len() == 0
       if velocity.len() < decceleration_factor * dt
         velocity = new Point(0, 0, 0)
       else
