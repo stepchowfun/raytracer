@@ -219,14 +219,14 @@ render_block = (x, y, width, height, samples, index) ->
   average.g /= num_samples
   average.b /= num_samples
 
-  # compute the deviation
-  deviation = 0
+  # compute the standard deviation
+  std_dev = 0
   for s in samples
-    deviation += Math.sqrt(Math.pow(s.r - average.r, 2) + Math.pow(s.g - average.g, 2) + Math.pow(s.b - average.b, 2))
-  deviation /= num_samples
+    std_dev += Math.pow(s.r - average.r, 2) + Math.pow(s.g - average.g, 2) + Math.pow(s.b - average.b, 2)
+  std_dev = Math.sqrt(std_dev / num_samples)
 
-  # if the deviation is small, just draw a rectangle whose color is the mean above
-  if (deviation < 1 / window.device.quality) or width * height <= 64
+  # if the standard deviation is small, just draw a rectangle whose color is the mean above
+  if (std_dev < 1 / window.device.quality) or width * height <= 64
     window.device.context.fillStyle = average.to_str()
     window.device.context.fillRect(x - 0.5, y - 0.5, width + 1, height + 1)
   else
