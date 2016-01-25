@@ -1,6 +1,6 @@
 A browser-based real-time raytracer written in CoffeeScript.
 
-![Screenshot of the demo.](https://s3.amazonaws.com/dubstepn/raytracer.jpg)
+![Screenshot of the demo.](https://static.stephanboyer.com/raytracer.jpg)
 
 See the accompanying [demo](http://jsraytracer.herokuapp.com/) and [blog post](http://www.stephanboyer.com/post/30).
 
